@@ -42,7 +42,7 @@ The ball physics are really weird as well, which isn't surprising given when thi
 
 <img src="/public/pinball-nes-3.png" width="300px"/>
 
-It's a [Breakout](https://en.wikipedia.org/wiki/Breakout_(video_game)) style game, with the player controlling Mario trying to break Paulina (I think) out of some kind of cage. It's a nice break from the original game, but the major issue with it is that the play area is really small, which combined with the erractic bouncing of the ball leads to an extremely difficult game. Every time I played this mini-game, it seemed like I would lose to the ball bouncing so unpredictably fast that I couldn't react. Maybe I just suck.
+It's a [Breakout](https://en.wikipedia.org/wiki/Breakout_(video_game)) style game, with the player controlling Mario trying to break Pauline (I think) out of some kind of cage. It's a nice break from the original game, but the major issue with it is that the play area is really small, which combined with the erractic bouncing of the ball leads to an extremely difficult game. Every time I played this mini-game, it seemed like I would lose to the ball bouncing so unpredictably fast that I couldn't react. Maybe I just suck.
 
 Anyway, this game does the bare minimum required to make a mildly fun pinball game, which is honestly not that much. 
 
