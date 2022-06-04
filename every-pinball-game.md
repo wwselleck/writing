@@ -1,249 +1,282 @@
----
-publishedAt: 2022-06-03
----
+<img width="1000px" src="./assets/solaire-banner.png" />
 
----
-__Advertisement :)__
+# Solaire
 
-- __[pica](https://nodeca.github.io/pica/demo/)__ - high quality and fast image
-  resize in browser.
-- __[babelfish](https://github.com/nodeca/babelfish/)__ - developer friendly
-  i18n with plurals support and easy syntax.
+[![npm version](https://badge.fury.io/js/solaire-discord.svg)](https://badge.fury.io/js/solaire-discord)
 
-You will like those projects!
+A lightweight framework with a simple interface for creating Discord bots in Node
 
----
+```js
+import Discord from 'discord.js';
+import { Solaire } from "solaire-discord";
 
-# h1 Heading 8-)
-## h2 Heading
-### h3 Heading
-#### h4 Heading
-##### h5 Heading
-###### h6 Heading
+const client = new Discord.Client({
+  intents: [ Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES ]
+});
 
+const bot = Solaire.create({
+  discordClient: client,
+  token: process.env.TOKEN,
+  commandPrelude: "!",
+  commands: {
+    // In a Discord channel...
+    // > !ban @someUser being mean
+    "ban <user:GuildMember> <...reason>": {
+      execute({ args, message }) {
+        // args.user: Discord.js::GuildMember(someUser)
+        // args.offense: ["being", "mean"]
+        message.channel.send(`Banning ${args.user.displayName} for ${args.reason.join(' ')}!`;
+      },
+    },
+  },
+});
 
-## Horizontal Rules
-
-___
-
----
-
-***
-
-
-## Typographic replacements
-
-Enable typographer option to see result.
-
-(c) (C) (r) (R) (tm) (TM) (p) (P) +-
-
-test.. test... test..... test?..... test!....
-
-!!!!!! ???? ,,  -- ---
-
-"Smartypants, double quotes" and 'single quotes'
-
-
-## Emphasis
-
-**This is bold text**
-
-__This is bold text__
-
-*This is italic text*
-
-_This is italic text_
-
-~~Strikethrough~~
-
-
-## Blockquotes
-
-
-> Blockquotes can also be nested...
->> ...by using additional greater-than signs right next to each other...
-> > > ...or with spaces between arrows.
-
-
-## Lists
-
-Unordered
-
-+ Create a list by starting a line with `+`, `-`, or `*`
-+ Sub-lists are made by indenting 2 spaces:
-  - Marker character change forces new list start:
-    * Ac tristique libero volutpat at
-    + Facilisis in pretium nisl aliquet
-    - Nulla volutpat aliquam velit
-+ Very easy!
-
-Ordered
-
-1. Lorem ipsum dolor sit amet
-2. Consectetur adipiscing elit
-3. Integer molestie lorem at massa
-
-
-1. You can use sequential numbers...
-1. ...or keep all the numbers as `1.`
-
-Start numbering with offset:
-
-57. foo
-1. bar
-
-
-## Code
-
-Inline `code`
-
-Indented code
-
-    // Some comments
-    line 1 of code
-    line 2 of code
-    line 3 of code
-
-
-Block code "fences"
+bot.start();
 
 ```
-Sample text here...
+
+### Discord.js
+Solaire interacts heavily with [Discord.js](https://github.com/discordjs/discord.js), and many of the objects exposed from the Solaire API will be directly from Discord.js.
+
+**Solaire requires that you provide a Discord.js client version >=13.0.0**
+
+### 📣 Simplicity & Limitations 📣
+Solaire is very much targetted at developers working on smaller or simpler Discord bots that don't require some of the more advanced features of existing popular Discord bot frameworks, and just want something that will get their bot up and running quickly. More advanced features may be added in the future, but the guiding principle of the framework will always be simplicity in its API. 
+
+If you don't find Solaire's feature-set to be advanced enough for your use case, there are other great Discord/Node frameworks to take a look at 
+- [sapphire](https://github.com/sapphiredev/framework)
+- [discord-akairo](https://github.com/discord-akairo/discord-akairo)
+
+#### Slash Commands
+Solaire does **not** utilize the new Discord [slash commands feature](https://blog.discord.com/slash-commands-are-here-8db0a385d9e6), instead utilizing the old-fashioned method of listening to new message events.
+
+---
+
+**[Example Bot](./example-bot)**
+
+[Install](#install) ·
+[Example Config](#example-config) ·
+[Defining Commands](#defining-commands) ·
+[Command Configuration](#command-configuration) ·
+[Events](#events)
+
+---
+
+## Install
+`npm install solaire-discord`
+
+## Config
+
+| Property          | Required | Type                                   | Desc                                                                                                                                                                         |
+|-------------------|----------|----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `discordClient`   | Yes      | `Discord.js::Client`                   | A Discord.js Client object. This client must have the `GUILD_MESSAGES`  intent enabled for Solaire to work properly.                                                         |
+| `token`           | Yes      | `string`                               | Your bot's Discord token (see https://discord.com/developers/docs/intro)                                                                                                      |
+| `commandPrelude`  | No       | `string`                               | The string that must precede a command's name in a Discord message for  the command to be invoked. Common values are `!`, `?`, `;;`, but any  string would technically work. |
+| `commandCooldown` | No       | `number`                               | The amount of time in milliseconds that a command is un-invokable after being used. This cooldown is _per-command_.                                                          |
+| `commands`        | Yes      | `Record<string, CommandConfiguration>` | See [Defining commands](#defining-commands) and [Command configuration](#command-configuration)                                                                                                                            |
+
+## Defining commands
+In Solaire, bot commands are defined using a definition string that resembles how you would actually use the command in Discord. For example, a command that is used like `!ban @someAnnoyingUser being mean`, would be defined using the string `ban <user:GuildMember> [...reason]`.
+
+This string, along with associated configuration for the command, is passed in via your Solaire config's `commands` property.
+
+```js
+   const bot = Solaire.create({
+    ...
+    commands: {
+      'ban <user:GuildMember> <...reason>': {
+        ...
+      }
+    }
+  })
 ```
 
-Syntax highlighting
-
-``` js
-var foo = function (bar) {
-  return bar++;
-};
-
-console.log(foo(5));
+### Command Name & Aliases
+A command's name is defined as the first word in your command definition string
+```
+ban <user>
+^------ "ban" is the command's name
 ```
 
-## Tables
-
-| Option | Description |
-| ------ | ----------- |
-| data   | path to data files to supply the data that will be passed into templates. |
-| engine | engine to be used for processing templates. Handlebars is the default. |
-| ext    | extension to be used for dest files. |
-
-Right aligned columns
-
-| Option | Description |
-| ------:| -----------:|
-| data   | path to data files to supply the data that will be passed into templates. |
-| engine | engine to be used for processing templates. Handlebars is the default. |
-| ext    | extension to be used for dest files. |
+You can define aliases for a command by appending the command's name with `|<alias>`, e.g.
+```
+ban|b|banMember <user>
+^---- "ban is the command's name, but "b" and "banMember" can also be used to invoke the command
+```
 
 
-## Links
+### Command Arguments
+After your command's name, you can define any number of arguments that can be passed into your command. 
 
-[link text](http://dev.nodeca.com)
+**Required Arguments**
 
-[link with title](http://nodeca.github.io/pica/demo/ "title text!")
+Required arguments are denoted in the definition string by being wrapped in `<>`, e.g.
+```
+ban <user>
+      ^---- "user" is a required argument for the "ban" command
+```
 
-Autoconverted link https://github.com/nodeca/pica (enable linkify to see)
+**Optional Arguments**
 
+Optional arguments are denoted by being wrapped in `[]`, e.g.
+```
+ban <user> [reason]
+             ^---- "reason" is an optional argument
+```
 
-## Images
+When an optional argument is defined, the remaining arguments in the command must also be optional.
 
-![Minion](https://octodex.github.com/images/minion.png)
-![Stormtroopocat](https://octodex.github.com/images/stormtroopocat.jpg "The Stormtroopocat")
+```
+ban [reason> <user>
+               ^----- INVALID - since "reason" is optional, all arguments after it must also be optional           
+```
 
-Like links, Images also have a footnote style syntax
+**Rest Arguments**
 
-![Alt text][id]
+A "rest" argument is an arg whose value is defined as all remaining words in a message. They are denoted by the arg's name being preceded with `...`. e.g.
 
-With a reference later in the document defining the URL location:
+```
+ban <user> [reason]
+> !ban @someAnnoyingUser being mean
+                          ^----- "reason" arg has value "being"
+                          
+ban <user> [...reason]
+> !ban @someAnnoyingUser being mean
+                          ^----- "reason" arg has value "being mean"
+```
 
-[id]: https://octodex.github.com/images/dojocat.jpg  "The Dojocat"
+A rest argument must be the last argument of a command. When accessing the argument in your execute, guard, etc. functions, the value of the argument will be an array.
 
+#### Argument Types
 
-## Plugins
+An argument's value can be constrained by defining an explicit `type` for that argument, denoted in the command definition string by appending the argument's name with `:<argType>`, e.g.
 
-The killer feature of `markdown-it` is very effective support of
-[syntax plugins](https://www.npmjs.org/browse/keyword/markdown-it-plugin).
+```
+ban <user:GuildMember>
+           ^---- "user" arg value must be parseable into a "GuildMember" type
+```
 
+Defining an argument type has a few benefits
 
-### [Emojies](https://github.com/markdown-it/markdown-it-emoji)
+- It validates that the passed in value is valid
+- It automatically parses the argument and fits it to its type, transforming the value to a more convenient data type for use when processing and executing the command
+- It provides documentation for how our command is supposed to be used
 
-> Classic markup: :wink: :crush: :cry: :tear: :laughing: :yum:
->
-> Shortcuts (emoticons): :-) :-( 8-) ;)
+The available argument types are:
 
-see [how to change output](https://github.com/markdown-it/markdown-it-emoji#change-output) with twemoji.
-
-
-### [Subscript](https://github.com/markdown-it/markdown-it-sub) / [Superscript](https://github.com/markdown-it/markdown-it-sup)
-
-- 19^th^
-- H~2~O
-
-
-### [\<ins>](https://github.com/markdown-it/markdown-it-ins)
-
-++Inserted text++
-
-
-### [\<mark>](https://github.com/markdown-it/markdown-it-mark)
-
-==Marked text==
-
-
-### [Footnotes](https://github.com/markdown-it/markdown-it-footnote)
-
-Footnote 1 link[^first].
-
-Footnote 2 link[^second].
-
-Inline footnote^[Text of inline footnote] definition.
-
-Duplicated footnote reference[^second].
-
-[^first]: Footnote **can have markup**
-
-    and multiple paragraphs.
-
-[^second]: Footnote text.
+| Argument Type | Validation                                                               | Resolved JS Type          |
+|---------------|--------------------------------------------------------------------------|---------------------------|
+| Int           | Validates using `parseInt`                                               | `Number`                  |
+| Float         | Validates using `parseFloat`                                             | `Number`                  |
+| GuildMember   | Validates that ID passed in resolves to a member of the message's server | `Discord.js::GuildMember` |
+| Date          | Validates using `new Date()`                                             | `Date`
 
 
-### [Definition lists](https://github.com/markdown-it/markdown-it-deflist)
 
-Term 1
+## Command Configuration
+### Command Execute Function
+When your command is invoked, the command's `execute` function gets called.
 
-:   Definition 1
-with lazy continuation.
+```js
+   const bot = Solaire.create({
+    ...
+    commandPrelude: '!',
+    commands: {
+      'ban <user:GuildMember> [...reason]': {
+        async execute({ args, message }) {
+         // message: Discord.js::Message
+         // args.user: Discord.js::GuildMember
+         // args.reason: string[]
+         
+         const fullReason = args.reason.join(' ');
 
-Term 2 with *inline markup*
+         message.channel.send(`Banning ${args.user.displayName} for ${fullReason}`;
 
-:   Definition 2
+         user.ban({ reason: fullReason })
+        }
+      }
+    }
+  })
+```
 
-        { some code, part of Definition 2 }
+```
+> !ban @someAnnoyingUser mean
+< Banning Some Annoying User for mean
+```
 
-    Third paragraph of definition 2.
+The payload that gets passed into the `execute` function contains the following properties
 
-_Compact style:_
-
-Term 1
-  ~ Definition 1
-
-Term 2
-  ~ Definition 2a
-  ~ Definition 2b
+| Property  | Type                  | Desc                                   |
+|-----------|-----------------------|----------------------------------------|
+| `args`    | `Record<string, any>` | The arguments passed into the command  |
+| `message` | `Discord.js::Message` | The message that triggered the command |
 
 
-### [Abbreviations](https://github.com/markdown-it/markdown-it-abbr)
+### Command Authorization
 
-This is HTML abbreviation example.
+You can restrict which users can invoke a command by defining a `guard` function for a command. 
 
-It converts "HTML", but keep intact partial entries like "xxxHTMLyyy" and so on.
+```js
+   const bot = Solaire.create({
+    ...
+    commandPrelude: '!',
+    commands: {
+      'ban <user:GuildMember> [...reason]': {
+        async execute({ args, message }) {...},
+        async guard({ error, ok, message, args}) {
+          if(!message.member.roles.cache.some(r => r.name.toLowerCase() === 'admin'){
+            error('Member must be an admin');
+          } else {
+            ok();
+          }
+        }
+      }
+    }
+  })
+```
+The payload provided to the `guard` function is the same as the one given to the `execute` function, with the addition of two new callback properties `ok` and `error`. If a `guard` function is provided, the command will be exected **only if** `guard` calls the `ok` function, **and** the `error` function is **not** called. If neither is called, the command will default closed and not execute.
 
-*[HTML]: Hyper Text Markup Language
+### Command Prelude
+It is heavily suggested that you assign a `commandPrelude` to your bot, which is the string that is required at the start of any command invocation. Otherwise, Solaire has to process every single message for the possibility that it's invoking a command. It's also just nan extremely common practice for chat bots.
 
-### [Custom containers](https://github.com/markdown-it/markdown-it-container)
+```js
+   const bot = Solaire.create({
+    ...
+    // To invoke a command in chat, the message has to start with '!'
+    // e.g. ❌  ban @someUser being mean WON'T work
+    //      ✅ !ban @someUser being mean WILL work
+    commandPrelude: '!',
+    commands: {
+      'ban <user> <reason>': {
+        ...
+      }
+    }
+   })
+```
 
-::: warning
-*here be dragons*
-:::
+```
+> !ban @someAnnoyingUser mean
+```
+
+
+
+
+```
+> !ban @someAnnoyingUser being mean
+< Banning Some Annoying User for being mean
+```
+
+## Events
+
+The Solaire class extends `EventEmitter`, and emits events that you can listen to. 
+
+### `commandInvokedEnd`
+
+This event gets emitted after a bot command is invoked and Solaire has finished processing the invocation. The object that is passed to the listener has the following properties
+
+| Property  | Type                     | Desc                                              |
+|-----------|--------------------------|---------------------------------------------------|
+| `success` | `boolean`                | Whether or not the command executed successfully  |
+| `command` | `Command`                | The Command that was invoked                      |
+| `message` | `Discord.js::Message`    | The message that invoked the command              |
+| `error`   | `CommandInvocationError` | See [`command-invocation-error.ts`](./src/command-invocation-error.ts) for all possible values  |
