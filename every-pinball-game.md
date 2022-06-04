@@ -14,6 +14,7 @@ I think even just one or two more boards would've made this game significantly m
 <img src="/public/kirbys-pinball-land.png" width="300px"/>
 
 # 3. Pinball (NES)
+<img src="/public/pinball-nes-4.png" width="300px"/>
 <img src="/public/pinball-nes-2.png" width="300px"/>
 
 Pinball was one of the original 17 games released for the NES, and uh....yeah I'd believe that. To be fair to this game, it was made back when this 
