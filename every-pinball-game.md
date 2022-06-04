@@ -1,4 +1,8 @@
-<img width="1000px" src="./assets/solaire-banner.png" />
+# 1. Kirby's Pinball Land
+<img src="/public/kirbys-pinball-land.png" />
+
+
+
 
 # Solaire
 
